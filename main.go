@@ -7,6 +7,7 @@ import (
 	"os"
 	"fmt"
 	"time"
+	"strconv"
 
 	mx "github.com/mcuadros/go-rpi-rgb-led-matrix"
 
@@ -75,7 +76,7 @@ func render(c *mx.Canvas) {
 
 	cozette.Font.DrawString(c, mar_l+2+18, 7+mar_b,  "-----  ", color.RGBA{3, 3, 3, 255})
 	cozette.Font.DrawString(c, mar_l+2+18, 7+mar_b,  "     --", color.RGBA{8, 0, 0, 255})
-	
+
 	currentDayOverlay := "";
 	for i := 0; i < 7; i++ {
 		if i == ((weekday - 1) % 7) {
@@ -108,7 +109,13 @@ func main() {
 	c := mx.NewCanvas(m)
 	defer c.Close()
 	for {
-		render(c)
+        brightnessStr, err := os.ReadFile("/mnt/tmp/brightness")
+        check(brightnessStr, err, []byte{})
+        brightness, err := strconv.ParseInt(string(brightnessStr), 10, 32)
+        if err != nil {
+            brightness = 1
+        }
+		render(c, brightness)
 		time.Sleep(100 * time.Millisecond)
 	}
 }
